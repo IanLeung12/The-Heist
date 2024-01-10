@@ -6,22 +6,26 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 
-public class Visualizer {
+public class Visualizer implements Runnable{
     private JFrame frame;
 
     public BufferedImage Diamond;
 
+    ArrayList<Integer> deck;
+
     Card card = new Card(3, "Diamonds");
 
-    Visualizer() {
+    Visualizer(ArrayList<Integer> deck) {
+        this.deck = deck;
 
         this.frame = new JFrame("Game");
 
         Mouse mouse = new Mouse();
         try {
-            Diamond = image("diamond.png");
+            Diamond = image("src/diamond.png");
         } catch (Exception ignored) {
 
         }
@@ -56,7 +60,31 @@ public class Visualizer {
 
 
     public void refresh() {
-        frame.repaint();
+
+        SwingUtilities.invokeLater(() ->frame.repaint());
+    }
+
+    /**
+     * When an object implementing interface <code>Runnable</code> is used
+     * to create a thread, starting the thread causes the object's
+     * <code>run</code> method to be called in that separately executing
+     * thread.
+     * <p>
+     * The general contract of the method <code>run</code> is that it may
+     * take any action whatsoever.
+     *
+     * @see Thread#run()
+     */
+    @Override
+    public void run() {
+        while (true) {
+            frame.repaint();
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     class GridAreaPanel extends JPanel {
@@ -68,9 +96,17 @@ public class Visualizer {
 
             Graphics2D g2d = (Graphics2D) g;
             g2d.setStroke(new BasicStroke(2.5f));
+            g2d.setBackground(new Color(49, 138, 49));
+            g2d.clearRect(0, 0, 2000, 2000);
             g.setColor(Color.black);
 
-            drawCard(card, g2d);
+            for (int i = 0; i < deck.size(); i ++) {
+                int row = i / 6;
+                int col = i % 6;
+                drawCard(deck.get(i), 50 + col * 225, 50 + row * 225, g2d);
+            }
+            drawCardb(500, 500, 1, g2d);
+
         }
 
         private void drawCircle(int x, int y, int d, Graphics g) {
@@ -79,15 +115,34 @@ public class Visualizer {
             g.drawOval(x, y, d, d);
         }
 
-        private void drawCard(Card card, Graphics2D g2d) {
-            g2d.setColor(new Color(234, 234, 239));
-            g2d.fillRect(card.x, card.y, card.width, card.height);
-            g2d.setColor(Color.black);
-            g2d.drawRect(card.x, card.y, card.width, card.height);
-            g2d.setFont(new Font("Elephant", 0, 36));
-            g2d.drawString(card.valToString(), card.x + 10, card.y + 40);
+        private void drawCard(int val, int x, int y, Graphics2D g2d) {
+            g2d.drawImage(Diamond, x, y, 200, 200, null);
 
+            if (val == -1) {
+                g2d.setFont(new Font("Elephant", Font.PLAIN, 32));
+                g2d.drawString("BOMB", x + 35, y + 110);
+            } else {
+                g2d.setFont(new Font("Elephant", Font.PLAIN, 36));
+                g2d.drawString(Integer.toString(val), x + 85, y + 110);
+            }
+        }
 
+        private void drawCardb(int x, int y, double scale, Graphics2D g2d) {
+
+            g2d.setStroke(new BasicStroke((float) (10 * scale)));
+            g2d.setColor(new Color(231, 232, 236));
+            int width = (int) (150 * scale);
+            int height = (int) (210 * scale);
+            int arc = (int) (5 * scale);
+            g2d.fillRect(x, y, width, height);
+            g2d.setColor(Color.RED);
+            g2d.drawRoundRect(x, y, width, height, arc, arc);
+            for (int i = 0; i < 3; i ++) {
+                for (int j = 0; j < 5; j ++) {
+                    g2d.drawImage(Diamond, (int) (15 * scale + x + 40 * i * scale), (int) (15 * scale + y + 36 * j * scale),
+                            (int) (40 * scale), (int) (36 * scale), null);
+                }
+            }
         }
     }//end of GridAreaPanel
 
@@ -121,9 +176,7 @@ public class Visualizer {
         }
 
         @Override
-        public void mouseMoved(MouseEvent e) {
-            System.out.println("a");
-        }
+        public void mouseMoved(MouseEvent e) {        }
     }
 
 } //end of DisplayGrid
