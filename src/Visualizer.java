@@ -144,7 +144,7 @@ public class Visualizer implements Runnable{
                 }
             }
         }
-    }//end of GridAreaPanel
+    }//end of GridAreaPanela
 
     class Mouse implements MouseListener, MouseMotionListener {
 
