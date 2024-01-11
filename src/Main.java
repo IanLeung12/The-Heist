@@ -7,11 +7,18 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) throws InterruptedException {
 
+        MenuVis mv = new MenuVis();
+        while (mv.start == false) {
+            mv.refresh();
+            Thread.sleep(10);
+        }
+        mv.refresh();
 
         ArrayList<Integer> deck = new ArrayList<>(13);
         deck.add(-1);
         for (int i = 1; i < 13; i ++) {
             deck.add(i);
+
         }
         Thread visualizer = new Thread(new Visualizer(deck));
         visualizer.start();
@@ -22,7 +29,7 @@ public class Main {
         while (inPlay) {
             int pos = (int) (Math.random() * deck.size());
             int pull = deck.remove(pos);
-             if (pull == -1) {
+            if (pull == -1) {
                 inPlay = false;
                 sum = 0;
                 System.out.println("You pulled a bomb and died.");

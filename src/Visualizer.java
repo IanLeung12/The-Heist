@@ -24,8 +24,9 @@ public class Visualizer implements Runnable{
         this.frame = new JFrame("Game");
 
         Mouse mouse = new Mouse();
+
         try {
-            Diamond = image("src/diamond.png");
+            Diamond = image("Pictures/diamond.png");
         } catch (Exception ignored) {
 
         }
@@ -83,6 +84,7 @@ public class Visualizer implements Runnable{
                 Thread.sleep(5);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+
             }
         }
     }
@@ -105,7 +107,10 @@ public class Visualizer implements Runnable{
                 int col = i % 6;
                 drawCard(deck.get(i), 50 + col * 225, 50 + row * 225, g2d);
             }
-            drawCardb(500, 500, 1, g2d);
+            for (int i = 30; i > 0; i -= 5) {
+                drawCardb(500 + i, 300 + i, 1, g2d);
+            }
+
 
         }
 
@@ -137,6 +142,10 @@ public class Visualizer implements Runnable{
             g2d.fillRect(x, y, width, height);
             g2d.setColor(Color.RED);
             g2d.drawRoundRect(x, y, width, height, arc, arc);
+            g2d.setColor(new Color(128, 8, 15));
+            g2d.setStroke(new BasicStroke((float) (3 * scale)));
+            int diff = (int) ((10 * scale) - (3 * scale));
+            g2d.drawRoundRect((int) (x - diff * 0.65), (int) (y - diff * 0.65), (int) (width + 1.5 * diff), (int) (height + 1.5 * diff), (int) (arc * 2.5), (int) (arc * 2.5));
             for (int i = 0; i < 3; i ++) {
                 for (int j = 0; j < 5; j ++) {
                     g2d.drawImage(Diamond, (int) (15 * scale + x + 40 * i * scale), (int) (15 * scale + y + 36 * j * scale),
