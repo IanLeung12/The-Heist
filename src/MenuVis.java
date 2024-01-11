@@ -2,7 +2,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -71,9 +70,9 @@ public class MenuVis{
         JButton startButton = new RoundedButton("START");
         JButton addButton = new JButton("How To Play");
 
-        startButton.setBounds(size.width/2 - 300, 400, 600, 300);
+        startButton.setBounds(size.width/2 - 250, size.height/2 - 125, 500, 250);
         startButton.setForeground(new Color(243, 246, 255));
-        startButton.setFont(new Font("elephant", Font.BOLD, 128));
+        startButton.setFont(new Font("elephant", Font.BOLD, 108));
         startButton.setBackground(new Color(173, 19, 19));
         startButton.setFocusPainted(false);
         startButton.addActionListener(e -> start = true);

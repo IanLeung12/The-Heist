@@ -1,32 +1,47 @@
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
 
-public class Visualizer implements Runnable{
+public class Visualizer{
     private JFrame frame;
 
     public BufferedImage Diamond;
 
+    BufferedImage money;
+
     ArrayList<Integer> deck;
+
+    ArrayList<Integer> hand;
+    int counter = 0;
+
+    int pick = -10;
+
+    int pickx = 30;
+
+    int totalWinnings;
+    int totalSpent;
+
 
     Card card = new Card(3, "Diamonds");
 
     Visualizer(ArrayList<Integer> deck) {
         this.deck = deck;
-
+        hand = new ArrayList<>(13);
         this.frame = new JFrame("Game");
-
         Mouse mouse = new Mouse();
 
         try {
             Diamond = image("Pictures/diamond.png");
+            money = image("Pictures/money.png");
         } catch (Exception ignored) {
 
         }
@@ -38,6 +53,7 @@ public class Visualizer implements Runnable{
         frame.getContentPane().add(BorderLayout.CENTER, new GridAreaPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+
         frame.setVisible(true);
     }
 
@@ -63,30 +79,13 @@ public class Visualizer implements Runnable{
     public void refresh() {
 
         SwingUtilities.invokeLater(() ->frame.repaint());
-    }
-
-    /**
-     * When an object implementing interface <code>Runnable</code> is used
-     * to create a thread, starting the thread causes the object's
-     * <code>run</code> method to be called in that separately executing
-     * thread.
-     * <p>
-     * The general contract of the method <code>run</code> is that it may
-     * take any action whatsoever.
-     *
-     * @see Thread#run()
-     */
-    @Override
-    public void run() {
-        while (true) {
-            frame.repaint();
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-
-            }
+        counter ++;
+        if (counter > 500 && pick == -10) {
+            int pos = (int) (Math.random() * deck.size());
+            pick = deck.remove(pos);
+            counter = 0;
         }
+
     }
 
     class GridAreaPanel extends JPanel {
@@ -103,13 +102,30 @@ public class Visualizer implements Runnable{
             g.setColor(Color.black);
 
             for (int i = 0; i < deck.size(); i ++) {
-                int row = i / 6;
-                int col = i % 6;
-                drawCard(deck.get(i), 50 + col * 225, 50 + row * 225, g2d);
+                drawCardb(60 - i * 2, 60 - i * 3, g2d);
             }
-            for (int i = 30; i > 0; i -= 5) {
-                drawCardb(500 + i, 300 + i, 1, g2d);
+
+
+
+            for (int i = 0; i < hand.size(); i ++) {
+                drawCard(hand.get(i), 300 + i * 60, 45, g2d);
             }
+
+            if (pick != -10) {
+                drawCard(pick, pickx, 45, g2d);
+                pickx += 10;
+                if (pickx >= 300 + hand.size() * 60) {
+                    hand.add(pick);
+                    pickx = 45;
+                    pick = -10;
+                    counter = 0;
+                }
+
+            }
+
+            g2d.setColor(new Color(221, 239, 245));
+            drawCircle(45, 325, 300, g);
+
 
 
         }
@@ -120,40 +136,67 @@ public class Visualizer implements Runnable{
             g.drawOval(x, y, d, d);
         }
 
-        private void drawCard(int val, int x, int y, Graphics2D g2d) {
-            g2d.drawImage(Diamond, x, y, 200, 200, null);
+        private void drawBorderedString(String str, int x, int y, float size, float stroke, Graphics2D g2d) {
+            AffineTransform originalTransform = g2d.getTransform();
+            Stroke originalStroke = g2d.getStroke();
+            Color originalColor = g2d.getColor();
 
-            if (val == -1) {
-                g2d.setFont(new Font("Elephant", Font.PLAIN, 32));
-                g2d.drawString("BOMB", x + 35, y + 110);
-            } else {
-                g2d.setFont(new Font("Elephant", Font.PLAIN, 36));
-                g2d.drawString(Integer.toString(val), x + 85, y + 110);
+            try {
+                g2d.translate(x, y);
+
+                g2d.setColor(Color.black);
+                FontRenderContext frc = g2d.getFontRenderContext();
+                TextLayout tl = new TextLayout(str, g2d.getFont().deriveFont(size), frc);
+                Shape shape = tl.getOutline(null);
+
+                g2d.setStroke(new BasicStroke(stroke));
+                g2d.draw(shape);
+
+                g2d.setColor(Color.white);
+                g2d.fill(shape);
+            } finally {
+                // Restore the original state
+                g2d.setTransform(originalTransform);
+                g2d.setStroke(originalStroke);
+                g2d.setColor(originalColor);
             }
         }
 
-        private void drawCardb(int x, int y, double scale, Graphics2D g2d) {
+        private void drawCard(int val, int x, int y, Graphics2D g2d) {
+            g2d.setStroke(new BasicStroke(10f));
+            drawTemplate(x, y, g2d);
+            g2d.drawImage(money, x + 15, y + 45, 120, 120, null);
+            g2d.setFont(new Font("Elephant", Font.PLAIN, 60));
+            g2d.setColor(Color.WHITE);
+            drawBorderedString(String.valueOf(val), x + 50, y + 120, 48f,5f, g2d);
+        }
 
-            g2d.setStroke(new BasicStroke((float) (10 * scale)));
+        private void drawCardb(int x, int y, Graphics2D g2d) {
+
+            g2d.setStroke(new BasicStroke(10f));
+            drawTemplate(x, y, g2d);
+            for (int i = 0; i < 3; i ++) {
+                for (int j = 0; j < 5; j ++) {
+                    g2d.drawImage(Diamond, (int) (15 * (double) 1 + x + 40 * i * (double) 1), (int) (15 * (double) 1 + y + 36 * j * (double) 1),
+                            (int) (40 * (double) 1), (int) (36 * (double) 1), null);
+                }
+            }
+        }
+
+        private void drawTemplate(int x, int y, Graphics2D g2d) {
             g2d.setColor(new Color(231, 232, 236));
-            int width = (int) (150 * scale);
-            int height = (int) (210 * scale);
-            int arc = (int) (5 * scale);
+            int width = 150;
+            int height = 210;
+            int arc = 5;
             g2d.fillRect(x, y, width, height);
             g2d.setColor(Color.RED);
             g2d.drawRoundRect(x, y, width, height, arc, arc);
             g2d.setColor(new Color(128, 8, 15));
-            g2d.setStroke(new BasicStroke((float) (3 * scale)));
-            int diff = (int) ((10 * scale) - (3 * scale));
+            g2d.setStroke(new BasicStroke(2f));
+            int diff = 7;
             g2d.drawRoundRect((int) (x - diff * 0.65), (int) (y - diff * 0.65), (int) (width + 1.5 * diff), (int) (height + 1.5 * diff), (int) (arc * 2.5), (int) (arc * 2.5));
-            for (int i = 0; i < 3; i ++) {
-                for (int j = 0; j < 5; j ++) {
-                    g2d.drawImage(Diamond, (int) (15 * scale + x + 40 * i * scale), (int) (15 * scale + y + 36 * j * scale),
-                            (int) (40 * scale), (int) (36 * scale), null);
-                }
-            }
         }
-    }//end of GridAreaPanela
+    }//end of GridAreaPanel
 
     class Mouse implements MouseListener, MouseMotionListener {
 
