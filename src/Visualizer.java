@@ -27,6 +27,10 @@ public class Visualizer{
 
     int pickx = 30;
 
+    double spinSpeed = 20;
+    int angle = 0;
+
+
     int totalWinnings;
     int totalSpent;
 
@@ -80,12 +84,17 @@ public class Visualizer{
 
         SwingUtilities.invokeLater(() ->frame.repaint());
         counter ++;
-        if (counter > 500 && pick == -10) {
+        if (counter > 500 && pick == -10 && deck.size() > 0) {
             int pos = (int) (Math.random() * deck.size());
             pick = deck.remove(pos);
             counter = 0;
         }
 
+        if (spinSpeed > -15) {
+            spinSpeed -= 0.05;
+        } else {
+            spinSpeed = 15 + (Math.random() * 20);
+        }
     }
 
     class GridAreaPanel extends JPanel {
@@ -125,11 +134,26 @@ public class Visualizer{
 
             g2d.setColor(new Color(221, 239, 245));
             drawCircle(45, 325, 300, g);
+            int x2;
+            int y2;
+            if (spinSpeed > 0) {
+                x2 = (int) (195 + 150 * Math.sin(Math.toRadians(angle + spinSpeed)));
+                y2 = (int) (475 + 150 * Math.cos(Math.toRadians(angle + spinSpeed)));
+                angle = (int) (angle + spinSpeed);
+            } else {
+                x2 = (int) (195 + 150 * Math.sin(Math.toRadians(angle)));
+                y2 = (int) (475 + 150 * Math.cos(Math.toRadians(angle)));
+            }
+            g2d.drawLine(195, 475, x2, y2);
+
 
 
 
         }
 
+        private double rad(double angle) {
+            return (angle*Math.PI)/180.0;
+        }
         private void drawCircle(int x, int y, int d, Graphics g) {
             g.fillOval(x, y, d, d);
             g.setColor(Color.black);
