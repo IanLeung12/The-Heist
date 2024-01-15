@@ -37,6 +37,7 @@ public class Visualizer{
     int totalWinnings = 0;
     int totalSpent = 0;
     int currentPayout = 0;
+    double houseProfit = 0;
 
     boolean playing = false;
 
@@ -90,7 +91,7 @@ public class Visualizer{
         playButton.addActionListener(e -> {
             if (!playing) {
                 playing = true;
-                totalSpent += 20;
+                totalSpent += 30;
                 reset();
             }
         });
@@ -141,15 +142,20 @@ public class Visualizer{
     public void end() {
         playing = false;
         totalWinnings += currentPayout;
+        if (totalWinnings > 0) {
+            houseProfit = Math.round((double) totalSpent/totalWinnings * 100.0)/100.0;
+        }
 
     }
 
     public boolean bombRolled() {
-        if (hand.isEmpty()) {
-            return false;
-        } else {
-            return hand.get(hand.size() - 1) == -1;
+        if (!hand.isEmpty()) {
+            if (hand.get(hand.size() - 1) == -1) {
+                end();
+                return true;
+            }
         }
+        return false;
     }
 
     public void reset() {
@@ -167,8 +173,8 @@ public class Visualizer{
     public boolean roll() {
         if (!deck.isEmpty()) {
             int pos = (int) (Math.random() * deck.size());
-            pick = deck.remove(pos);
-
+            pick = deck.get(pos);
+            deck.remove((Integer) (hand.size() + 1));
         }
         return pick >= 0;
     }
@@ -216,23 +222,29 @@ public class Visualizer{
 
             g.setColor(Color.white);
             g.setFont(new Font("elephant", Font.PLAIN, 60));
-            drawBorderedString("Current Payout: $" + currentPayout, 500, 400, 60,2, g2d);
-            drawBorderedString("Total Winnings: $" + totalWinnings, 500, 500, 60,2, g2d);
-            drawBorderedString("Total Spent: $" + totalSpent, 500, 600, 60,2, g2d);
-            drawBorderedString("Profit Margin :" + Math.round((double) totalWinnings/totalSpent * 100.0)/100.0 + "x", 500, 700, 60,2, g2d);
+            drawBorderedString("Current Payout: $" + currentPayout, 500, 400, 50,2, g2d);
+            drawBorderedString("Total Winnings: $" + totalWinnings, 500, 500, 50,2, g2d);
+            drawBorderedString("Total Spent: $" + totalSpent, 500, 600, 50,2, g2d);
+            drawBorderedString("House Profit :" + houseProfit + "x", 500, 700, 50,2, g2d);
             String inst = "INSTRUCTIONS: \n" +
-                    "Pay $20 to draw up to 5 cards \n" +
+                    "Pay $30 to draw up to 5 cards \n" +
                     "in a deck of 13 cards. The cards \n" +
                     "range from 1 - 12, plus a bomb card. \n" +
-                    "the bomb card ends the game with no \n" +
-                    "payout. Otherwise, the payout is the \n" +
-                    "sum of your cards";
+                    "Cards are replaced, but the lowest \n" +
+                    "value card is removed from play each\n" +
+                    "turn. The bomb card ends the game \n" +
+                    "with no payout. Otherwise, the payout\n" +
+                    "is the sum of your cards";
             int y = 100;
             for (String line : inst.split("\n")) {
                 drawBorderedString(line, 1100, y, 42, 2, g2d);
                 y += 60;
             }
 
+            drawCard(-1, 30, 750, g2d);
+            for (int i = 1; i < 13; i ++) {
+                drawCard(i, 30 + i * 140, 750, g2d);
+            }
         }
 
         private void drawPie(int x, int y, int rad, int start, int ext, Color clr, Graphics2D g2d) {
