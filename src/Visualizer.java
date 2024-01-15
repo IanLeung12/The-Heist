@@ -2,6 +2,7 @@ import java.awt.event.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +28,7 @@ public class Visualizer{
 
     int pickx = 30;
 
-    double spinSpeed = 20;
+    double spinSpeed = -1;
     int angle = 0;
 
 
@@ -83,18 +84,49 @@ public class Visualizer{
     public void refresh() {
 
         SwingUtilities.invokeLater(() ->frame.repaint());
-        counter ++;
-        if (counter > 500 && pick == -10 && deck.size() > 0) {
-            int pos = (int) (Math.random() * deck.size());
-            pick = deck.remove(pos);
-            counter = 0;
+        tick();
+        if (checkDone() && !bombRolled()) {
+            roll();
         }
 
-        if (spinSpeed > -15) {
-            spinSpeed -= 0.05;
+    }
+
+    public boolean bombRolled() {
+        if (hand.isEmpty()) {
+            return false;
         } else {
-            spinSpeed = 15 + (Math.random() * 20);
+            return hand.get(hand.size() - 1) == -1;
         }
+    }
+
+    public void reset() {
+        for (int i = 1; i < 13; i ++) {
+            deck.add(i);
+        }
+        hand.clear();
+    }
+
+    public boolean roll() {
+        if (!deck.isEmpty()) {
+            int pos = (int) (Math.random() * deck.size());
+            pick = deck.remove(pos);
+            spinSpeed = Math.random() * 15 + 20;
+
+        }
+        return pick >= 0;
+    }
+
+    public void tick() {
+        if (spinSpeed > 0) {
+            spinSpeed -= 0.05;
+        } else if (checkDone()) {
+            counter = 10000;
+        }
+        counter --;
+    }
+
+    public boolean checkDone() {
+        return spinSpeed < 0 && pick == -10 && counter < 0;
     }
 
     class GridAreaPanel extends JPanel {
@@ -134,6 +166,16 @@ public class Visualizer{
 
             g2d.setColor(new Color(221, 239, 245));
             drawCircle(45, 325, 300, g);
+
+            drawPie(195, 475, 150, 18, 72, Color.green, g2d);
+            drawPie(195, 475, 150, 90, 288, new Color(245, 221, 67), g2d);
+
+            g2d.setFont(new Font("elephant", Font.PLAIN, 24));
+            drawBorderedString("Escape", 210, 415, 24, 3, g2d);
+            drawBorderedString("Keep Playing", 120, 535, 24, 3, g2d);
+
+
+
             int x2;
             int y2;
             if (spinSpeed > 0) {
@@ -151,8 +193,13 @@ public class Visualizer{
 
         }
 
-        private double rad(double angle) {
-            return (angle*Math.PI)/180.0;
+        private void drawPie(int x, int y, int rad, int start, int ext, Color clr, Graphics2D g2d) {
+            Arc2D pie = new Arc2D.Double();
+            pie.setArcByCenter(x, y, rad, start, ext, Arc2D.PIE);
+            g2d.setColor(clr);
+            g2d.fill(pie);
+            g2d.setColor(Color.black);
+            g2d.draw(pie);
         }
         private void drawCircle(int x, int y, int d, Graphics g) {
             g.fillOval(x, y, d, d);

@@ -16,7 +16,7 @@ public class Main {
 
         ArrayList<Integer> deck = new ArrayList<>(13);
 
-        //deck.add(-1);
+        deck.add(-1);
         for (int i = 1; i < 13; i ++) {
             deck.add(i);
 
@@ -27,7 +27,7 @@ public class Main {
             visualizer.refresh();
             Thread.sleep(1);
         }
-//
+
 //        boolean inPlay = true;
 //        int sum = 0;
 //        Scanner input = new Scanner(System.in);
@@ -43,15 +43,18 @@ public class Main {
 //                System.out.println("You pulled a " + pull + ".");
 //                System.out.println("Total Sum: " + sum);
 //                System.out.println("Cards left: " + deck.size());
-//                System.out.println("Do you wish to keep playing? (y/n)");
-//                if (!input.next().equals("y")) {
+//                if (Math.random() > 0.20) {
+//                    System.out.println("The spinner decided to keep playing\n");
+//                } else {
+//                    System.out.println("The spinner decides its time to escape");
 //                    inPlay = false;
 //                }
 //            }
+//            Thread.sleep(1000);
 //        }
 //
 //        System.out.println("You left with $" + sum);
-//
+
 
 
 
