@@ -15,25 +15,30 @@ import java.util.ArrayList;
 public class Visualizer{
     private JFrame frame;
 
-    public BufferedImage Diamond;
+    private JLayeredPane lframe;
+    private JPanel gPanel = new JPanel();
+    private JPanel bPanel = new JPanel();
+
+    BufferedImage Diamond;
 
     BufferedImage money;
+    BufferedImage bomb;
 
     ArrayList<Integer> deck;
 
     ArrayList<Integer> hand;
-    int counter = 0;
 
     int pick = -10;
 
     int pickx = 30;
 
-    double spinSpeed = -1;
-    int angle = 0;
+    Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
 
+    int totalWinnings = 0;
+    int totalSpent = 0;
+    int currentPayout = 0;
 
-    int totalWinnings;
-    int totalSpent;
+    boolean playing = false;
 
 
     Card card = new Card(3, "Diamonds");
@@ -42,24 +47,57 @@ public class Visualizer{
         this.deck = deck;
         hand = new ArrayList<>(13);
         this.frame = new JFrame("Game");
-        Mouse mouse = new Mouse();
+        lframe = new JLayeredPane();
+        lframe.setBounds(0, 0, size.width, size.height);
 
         try {
             Diamond = image("Pictures/diamond.png");
             money = image("Pictures/money.png");
+            bomb = image("Pictures/bomb.png");
         } catch (Exception ignored) {
 
         }
 
-        //JPanel buttonPanel = addButtons();
-        frame.addMouseListener(mouse);
-        frame.addMouseMotionListener(mouse);
-        //frame.getContentPane().add(BorderLayout.NORTH, buttonPanel);
-        frame.getContentPane().add(BorderLayout.CENTER, new GridAreaPanel());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+        gPanel = new Visualizer.GridAreaPanel();
+        gPanel.setBackground(new Color(25, 100, 23));
+        gPanel.setBounds(0, 0, size.width, size.height);
+        gPanel.setOpaque(true);
+        bPanel = addButtons();
+        bPanel.setBounds(0, 0, size.width, size.height);
+        bPanel.setOpaque(false);
 
+        lframe.add(gPanel, 0, 0);
+        lframe.add(bPanel, 1, 0);
+
+        frame.add(lframe);
+        frame.pack();
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(size);
         frame.setVisible(true);
+    }
+
+
+    private JPanel addButtons() {
+        JPanel buttonPanel = new JPanel();
+        JButton playButton = new RoundedButton("Play");
+
+        playButton.setBounds(50, 350, 400, 250);
+        playButton.setForeground(new Color(242, 245, 130));
+        playButton.setFont(new Font("elephant", Font.BOLD, 108));
+        playButton.setBackground(new Color(5, 66, 10));
+        playButton.setFocusPainted(false);
+        playButton.addActionListener(e -> {
+            if (!playing) {
+                playing = true;
+                totalSpent += 20;
+                reset();
+            }
+        });
+
+        buttonPanel.add(playButton);
+        buttonPanel.setLayout(null);
+        return buttonPanel;
     }
 
     /**
@@ -84,10 +122,25 @@ public class Visualizer{
     public void refresh() {
 
         SwingUtilities.invokeLater(() ->frame.repaint());
-        tick();
-        if (checkDone() && !bombRolled()) {
-            roll();
+        if (playing) {
+            if (hand.size() >= 5) {
+                end();
+            } else {
+                if (pick == -10 && !bombRolled()) {
+                    if (!roll()) {
+                        currentPayout = 0;
+                        end();
+                    }
+                }
+            }
         }
+
+
+    }
+
+    public void end() {
+        playing = false;
+        totalWinnings += currentPayout;
 
     }
 
@@ -100,33 +153,24 @@ public class Visualizer{
     }
 
     public void reset() {
+        deck.clear();
         for (int i = 1; i < 13; i ++) {
             deck.add(i);
         }
+        deck.add(-1);
+        pick = -10;
+        currentPayout = 0;
         hand.clear();
     }
+
 
     public boolean roll() {
         if (!deck.isEmpty()) {
             int pos = (int) (Math.random() * deck.size());
             pick = deck.remove(pos);
-            spinSpeed = Math.random() * 15 + 20;
 
         }
         return pick >= 0;
-    }
-
-    public void tick() {
-        if (spinSpeed > 0) {
-            spinSpeed -= 0.05;
-        } else if (checkDone()) {
-            counter = 10000;
-        }
-        counter --;
-    }
-
-    public boolean checkDone() {
-        return spinSpeed < 0 && pick == -10 && counter < 0;
     }
 
     class GridAreaPanel extends JPanel {
@@ -137,6 +181,7 @@ public class Visualizer{
             setDoubleBuffered(true);
 
             Graphics2D g2d = (Graphics2D) g;
+
             g2d.setStroke(new BasicStroke(2.5f));
             g2d.setBackground(new Color(49, 138, 49));
             g2d.clearRect(0, 0, 2000, 2000);
@@ -149,47 +194,44 @@ public class Visualizer{
 
 
             for (int i = 0; i < hand.size(); i ++) {
-                drawCard(hand.get(i), 300 + i * 60, 45, g2d);
+                drawCard(hand.get(i), 300 + i * 120, 45, g2d);
             }
 
             if (pick != -10) {
                 drawCard(pick, pickx, 45, g2d);
                 pickx += 10;
-                if (pickx >= 300 + hand.size() * 60) {
+                if (pickx >= 300 + hand.size() * 120) {
+                    if (pick != -1) {
+                        currentPayout += pick;
+                    } else {
+                        currentPayout = 0;
+                    }
+
                     hand.add(pick);
                     pickx = 45;
                     pick = -10;
-                    counter = 0;
                 }
 
             }
 
-            g2d.setColor(new Color(221, 239, 245));
-            drawCircle(45, 325, 300, g);
-
-            drawPie(195, 475, 150, 18, 72, Color.green, g2d);
-            drawPie(195, 475, 150, 90, 288, new Color(245, 221, 67), g2d);
-
-            g2d.setFont(new Font("elephant", Font.PLAIN, 24));
-            drawBorderedString("Escape", 210, 415, 24, 3, g2d);
-            drawBorderedString("Keep Playing", 120, 535, 24, 3, g2d);
-
-
-
-            int x2;
-            int y2;
-            if (spinSpeed > 0) {
-                x2 = (int) (195 + 150 * Math.sin(Math.toRadians(angle + spinSpeed)));
-                y2 = (int) (475 + 150 * Math.cos(Math.toRadians(angle + spinSpeed)));
-                angle = (int) (angle + spinSpeed);
-            } else {
-                x2 = (int) (195 + 150 * Math.sin(Math.toRadians(angle)));
-                y2 = (int) (475 + 150 * Math.cos(Math.toRadians(angle)));
+            g.setColor(Color.white);
+            g.setFont(new Font("elephant", Font.PLAIN, 60));
+            drawBorderedString("Current Payout: $" + currentPayout, 500, 400, 60,2, g2d);
+            drawBorderedString("Total Winnings: $" + totalWinnings, 500, 500, 60,2, g2d);
+            drawBorderedString("Total Spent: $" + totalSpent, 500, 600, 60,2, g2d);
+            drawBorderedString("Profit Margin :" + Math.round((double) totalWinnings/totalSpent * 100.0)/100.0 + "x", 500, 700, 60,2, g2d);
+            String inst = "INSTRUCTIONS: \n" +
+                    "Pay $20 to draw up to 5 cards \n" +
+                    "in a deck of 13 cards. The cards \n" +
+                    "range from 1 - 12, plus a bomb card. \n" +
+                    "the bomb card ends the game with no \n" +
+                    "payout. Otherwise, the payout is the \n" +
+                    "sum of your cards";
+            int y = 100;
+            for (String line : inst.split("\n")) {
+                drawBorderedString(line, 1100, y, 42, 2, g2d);
+                y += 60;
             }
-            g2d.drawLine(195, 475, x2, y2);
-
-
-
 
         }
 
@@ -236,10 +278,14 @@ public class Visualizer{
         private void drawCard(int val, int x, int y, Graphics2D g2d) {
             g2d.setStroke(new BasicStroke(10f));
             drawTemplate(x, y, g2d);
-            g2d.drawImage(money, x + 15, y + 45, 120, 120, null);
-            g2d.setFont(new Font("Elephant", Font.PLAIN, 60));
-            g2d.setColor(Color.WHITE);
-            drawBorderedString(String.valueOf(val), x + 50, y + 120, 48f,5f, g2d);
+            if (val == -1) {
+                g2d.drawImage(bomb, x + 15, y + 45, 120, 120, null);
+            } else {
+                g2d.drawImage(money, x + 15, y + 45, 120, 120, null);
+                g2d.setFont(new Font("Elephant", Font.PLAIN, 60));
+                g2d.setColor(Color.WHITE);
+                drawBorderedString(String.valueOf(val), x + 50, y + 120, 48f,5f, g2d);
+            }
         }
 
         private void drawCardb(int x, int y, Graphics2D g2d) {
@@ -268,38 +314,5 @@ public class Visualizer{
             g2d.drawRoundRect((int) (x - diff * 0.65), (int) (y - diff * 0.65), (int) (width + 1.5 * diff), (int) (height + 1.5 * diff), (int) (arc * 2.5), (int) (arc * 2.5));
         }
     }//end of GridAreaPanel
-
-    class Mouse implements MouseListener, MouseMotionListener {
-
-        Mouse() {
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent e) {        }
-    }
 
 } //end of DisplayGrid

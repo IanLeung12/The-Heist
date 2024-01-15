@@ -68,7 +68,6 @@ public class MenuVis{
     private JPanel addButtons() {
         JPanel buttonPanel = new JPanel();
         JButton startButton = new RoundedButton("START");
-        JButton addButton = new JButton("How To Play");
 
         startButton.setBounds(size.width/2 - 250, size.height/2 - 125, 500, 250);
         startButton.setForeground(new Color(243, 246, 255));
