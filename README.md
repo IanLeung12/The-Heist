@@ -13,3 +13,6 @@ General Remarks:
   There is a higher probability to win money than to lose money, but the existence of the bomb card causes the average amount lost to be much higher than the average amount gained. 
   Additionally, it has a high standard deviation, meaning that there is a large spread and the player could likely have extreme and difficult to predict results if they play very few times. 
   Altogether, the heist is a unique gambling card game that provides a sense of victory, while also presenting an element of risk and randomness.
+
+
+![image](https://github.com/user-attachments/assets/0458089a-6f4e-4501-af41-44c0b6d96168)
