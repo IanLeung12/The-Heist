@@ -14,5 +14,8 @@ General Remarks:
   Additionally, it has a high standard deviation, meaning that there is a large spread and the player could likely have extreme and difficult to predict results if they play very few times. 
   Altogether, the heist is a unique gambling card game that provides a sense of victory, while also presenting an element of risk and randomness.
 
+FULL STATISTICAL ANALYSIS REPORT:
+https://docs.google.com/document/d/1EgSZc79zyIdnsbwQG6yBfJVN84EbTsq-WRumjNrAFJE/edit?usp=sharing
 
+Demo:
 ![image](https://github.com/user-attachments/assets/0458089a-6f4e-4501-af41-44c0b6d96168)
